@@ -21,14 +21,13 @@ proc_id=${SLURM_ARRAY_TASK_ID}
 #SPACE=' '
 #var2='50'
 #$method = "$var1${SPACE}$var2"
-method=ibs_15
-#Nsamples=10
-#method=ibs_alloc_5
+#method=ibs
+method=ibs_alloc_5
 #method=fixed
 #method=fixed 
 #method=fixedb
 #method=exact
-
+#Nsamples=50
 
 if [ $method = "exact" ]; then
     workdir=$SCRATCH/${PROJECT_FOLDER}/results/${model}/${method}
@@ -46,11 +45,13 @@ cd $workdir
 
 echo $model $method $Nsamples $proc_id
 
-echo "addpath('$SCRATCH/${PROJECT_FOLDER}/matlab/'); recover_theta('${model}','${method}',${proc_id},${Nsamples}); exit;" 
+echo "addpath('$SCRATCH/${PROJECT_FOLDER}/matlab/'); recover_theta('${model}','${method}',${proc_id},${Nsamples}); exit;" #| matlab -nodisplay
+#echo "Done"
+
 cat<<EOF | matlab -nodisplay
 %job_id = str2num(strjoin(regexp('$proc_id','\d','match'), ''))
 job_id = str2num('$proc_id')
-recover_theta('vstm','ibs_15', job_id)
+recover_theta('vstm','ibs_alloc_5', job_id, ${Nsamples})
 
-EOF
+EOF 
 

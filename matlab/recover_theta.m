@@ -4,7 +4,15 @@ function recover_theta(model,method,proc_id,Nsamples,Ndatasets)
 if nargin < 4; Nsamples = []; end
 if nargin < 5; Ndatasets = []; end
 
+method_split = split(method,"_");
 settings = get_model_settings(model);
+if isempty(str2num(method_split{2})) 
+    %submethod = [method_split{1},'_', method_split{2}]
+    Nsamples = str2num(method_split{3});
+else 
+    %submethod = method_split{1};
+    Nsamples = str2num(method_split{2});
+end 
 settings.Nsamples = Nsamples;
 
 % Add required folders
@@ -13,20 +21,43 @@ addpath([mypath filesep 'bads']);
 addpath([mypath filesep 'datasets']);
 if strcmp(model,'vstm'); addpath([mypath filesep 'CircStat2012a']); end
 
-% Loop over iterations
-if methodtype = isa(method,'string') 
-    theta_filename = ['theta_' model '_' method '_' num2str(proc_id) '.txt'];
-    output_filename = ['output_' model '_' method '_' num2str(proc_id) '.txt'];
-else
-    theta_filename = ['theta_' model '_' method{1} '_' num2str(proc_id) '.txt'];
-    output_filename = ['output_' model '_' method{1} '_' num2str(proc_id) '.txt'];
+% Loop over iterations (add case where method is not string...)
+% methodtype = isa(method,'char') 
+
+% if methodtype == 1
+%     theta_filename = ['theta_' model '_' method '_' num2str(proc_id) '.txt'];
+%     output_filename = ['output_' model '_' method '_' num2str(proc_id) '.txt'];
+% else
+%theta_filename = ['theta_' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
+theta_filename = ['theta_' model '_' method '_' num2str(proc_id) '.txt'];
+
+%output_filename = ['output_' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
+output_filename = ['output_' model '_' method '_' num2str(proc_id) '.txt'];
+%nll_exact_filename = ['nll_exact_' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
+nll_exact_filename = ['nll_exact_' model '_' method '_' num2str(proc_id) '.txt'];
+
+%pvec_filename = ['p_vec_' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
+%Nreps_filename = ['Nreps' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
+pvec_filename = ['p_vec_' model '_' method '_' num2str(proc_id) '.txt'];
+Nreps_filename = ['Nreps' model '_' method '_' num2str(proc_id) '.txt'];
+%nll_diff_filename = ['nll_diff' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
+
+%save('/scratch/xl1005/IBS-2-development/results/theta_filename.txt','theta_filename')
+%save('/scratch/xl1005/IBS-2-development/results/output_filename.txt','output_filename')
+%save('/scratch/xl1005/IBS-2-development/results/xbest_filename.txt','xbest_filename')
+%save('/scratch/xl1005/IBS-2-development/results/pvec_filename.txt','pvec_filename')
+%save('/scratch/xl1005/IBS-2-development/results/Nreps_filename.txt','Nreps_filename')
 
 % If output file already exist, continue from previous run
-theta_inf = []; output_vec = [];
+theta_inf = []; output_vec = [];nll_exact = []; p_vec=[];Nresp =[];
 if exist(theta_filename,'file') && exist(output_filename,'file')
     try
         theta_inf = dlmread(theta_filename);
         output_vec = dlmread(output_filename);
+        nll_exact = dlmread(nll_exact_filename);
+        %nll_diff = dlmread(nll_diff_filename);
+        p_vec = dlmread(pvec_filename);
+        Nreps = dlmread(Nreps_filename);
     catch
         % File(s) corrupted, need to restart from scratch
     end
@@ -44,10 +75,17 @@ for i=iStart:Ndatasets
     rng(i);
     stim=data.stim_all{i};
     resp=data.resp_all{i};
-    [theta_inf(i,:),output_vec(i,:)] = ...
+    [p_vec(i,:),Nreps(i,:),nll_exact(i,:),theta_inf(i,:),output_vec(i,:)] = ...
         infer_theta(model,method,stim,resp,settings);
     dlmwrite(theta_filename,theta_inf,'Delimiter','\t')
     dlmwrite(output_filename,output_vec,'Delimiter','\t')
+    dlmwrite(nll_exact_filename,nll_exact,'Delimiter','\t')
+   % dlmwrite(nll_diff_filename,nll_diff,'Delimiter','\t')
+
+    dlmwrite(pvec_filename,p_vec,'Delimiter','\t')
+    dlmwrite(Nreps_filename,Nreps,'Delimiter','\t')
 end
   
 end
+
+

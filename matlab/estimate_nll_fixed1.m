@@ -1,6 +1,6 @@
 function [nll,nll_sd,output]=estimate_nll_fixed1(model,stim,resp_real,theta,Nsamples,Nreps)
 %ESTIMATE_NLL_FIXED1 Negative log likelihood estimation via fixed sampling.
-% (Uses correction of one pseudo-count.)
+% (Uses correction of one pseudo-count. prior added: assume one hit and one miss have been seen;)
 
 persistent samples_used;
 persistent reps_used;

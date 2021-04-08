@@ -1,14 +1,20 @@
-function [temp1,temp2,K_tot,allocate_reps,theta_inf,output_vec]=infer_theta(model,method,stim,resp,settings)
+function [p_vec,Nreps,nll_exact,theta_inf,output_vec]=infer_theta(model,method,stim,resp,settings)
 %INFER_THETA Optimization run for a single problem set.
 % persistent x_00;
 % if isempty(x_00)
 %     x_00 = 0;
 % end 
 % Set default options for BADS optimization algorithm
+method_split = split(method,"_");
+
 badsopts = bads('defaults');
-badsopts.UncertaintyHandling = ~strcmp(method{1},'exact'); %%changed method
+badsopts.UncertaintyHandling = ~strcmp(method_split{2},'exact'); %%changed method
 badsopts.NoiseFinalSamples = 0;
 badsopts.MaxFunEvals = 500;
+if badsopts.UncertaintyHandling
+    badsopts.SpecifyTargetNoise = true; %tell bads the noise of the point, which will improve the bad optimization 
+end
+
 % badsopts.NonlinearScaling = 'off';
 
 % Extract settings
@@ -60,8 +66,16 @@ end
 % fprintf('x0',x0)
 % x_00 = x0;
 % method = {'ibs_alloc', 10};
-submethod = method{1};
-Nsamples = method{2};
+if isempty(str2num(method_split{2})) 
+    submethod = [method_split{1},'_', method_split{2}]
+    Nsamples = str2num(method_split{3});
+else 
+    submethod = method_split{1};
+end 
+%method_split = strsplit(method);
+%if length(method_split) > 1
+%    Nsamples = str2num(method_split{2});
+%end 
 
 [nll_fix,~,output_fix] = estimate_nll_fixed1(model,stim,resp,x0,Nsamples); % use x0 to get vector p by calling fixed sampling
 p_vec = output_fix.p_vec;
@@ -136,9 +150,12 @@ if strcmp(submethod,'ibs') || strcmp(submethod,'ibs_alloc') ||strcmp(submethod,'
 end
 
 output_vec = [nLL_best,nLL_sd_best, output.samples_used,output.reps_used,output.funcalls,t_tot,bench_t];
-temp1 = p_vec;
-temp2 = Nreps;
-
-K_tot = output.K_tot;
-allocate_reps = output.allocate_reps;
+p_vec = p_vec;
+Nreps = Nreps;
+%x_best = theta_inf;
+[nll_exact,~,~]=estimate_nll_exact(model,stim,resp,theta_inf,1)
+%nll_exact = nll_exact;
+%nll_diff = nll_exact - output_vec(1);
+%K_tot = output.K_tot;
+%allocate_reps = output.allocate_reps;
 end

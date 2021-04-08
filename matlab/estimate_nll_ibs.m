@@ -11,7 +11,7 @@ if isempty(samples_used)
     samples_used = 0;
     reps_used = 0;
     funcalls = 0;
-    K_tot = [];
+    %K_tot = [];
     allocate_reps = 0;
 end
 if nargin < 4 || isempty(theta)
@@ -24,7 +24,7 @@ if nargin < 4 || isempty(theta)
     samples_used = 0;
     reps_used = 0;
     funcalls = 0;
-    K_tot = [];
+    %K_tot = [];
 %     allocate_reps = 0; 
     return;
 end
@@ -39,7 +39,7 @@ nll_var_vec = zeros(1,max(Nreps));
 
 Ntrials = size(resp_real,1);
 K_reps = [];
-K_tot = [];
+%K_tot = [];
 % %initate variables for fix sampling
 % fix_rep = 100; % 100 fix sampling 
 % resp = NaN(Ntrials,1);
