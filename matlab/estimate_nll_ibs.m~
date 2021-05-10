@@ -16,7 +16,7 @@ if isempty(samples_used)
 end
 if nargin < 4 || isempty(theta)
     nll = []; nll_sd = []; 
-    output.samples_used = samples_used;     
+    output.samples_used = samples_used;
     output.reps_used = reps_used;
     output.funcalls = funcalls;
     %output.K_tot = K_tot;
@@ -128,7 +128,7 @@ if nargout > 2
     output.samples_used = samples_used;
     output.reps_used = reps_used;    
     output.funcalls = funcalls;
-    output.nll_mat = nll_mat;
+    output.K_tot = K_tot;
     output.allocate_reps = allocate_reps;
 end
 

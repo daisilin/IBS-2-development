@@ -7,7 +7,7 @@ stim1 = stim{1} %uncomment
 resp = dataset.resp_all
 % resp1 = cell2mat(resp)
 resp1 = resp{1}; %uncomment
-settings.Nsamples = 10; %this is for fixed sampling
-[p_vec,Nreps,nll_exact,theta_inf,output_vec]=infer_theta('psycho','ibs_alloc_10',stim1,resp1,settings);
+settings.Nsamples = 5; %this is for fixed sampling
+[p_vec,Nreps,nll_exact,theta_inf,output_vec]=infer_theta('psycho','ibs_alloc_5',stim1,resp1,settings);
 %% test all dataset
 recover_theta('psycho','ibs2',1,5,100)

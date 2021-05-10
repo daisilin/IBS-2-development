@@ -84,7 +84,7 @@ for i = 1:120
     %four_nll_diff_arr{end+1} = four_nll_diff_cell;
     %four_nll_diff_mean_arr{end+1} = four_nll_diff_mean
 
-    psy_nll_diff_cell = psy_ibs_5{i} - psy_ibs_alloc_5{i};
+    psy_nll_diff_cell = psy_ibs_5{i} - psy_ibs_alloc_5{i}; %nll_exact difference 
     psy_nll_diff_mean = mean(psy_nll_diff_cell);
     psy_nll_diff_arr{end+1} = psy_nll_diff_cell;
     psy_nll_diff_mean_arr{end+1} = psy_nll_diff_mean
