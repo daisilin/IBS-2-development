@@ -208,15 +208,15 @@ end
 %mat_exact_vstm_ibs_5 = cell2mat(vstm_ibs_5);
 arr_nll_vstm_ibs_alloc3 = mat_nll_vstm_ibs_alloc3(:)';
 figure
-histogram(arr_nll_vstm_ibs_alloc3(1,1:3440),'edgecolor','none');
-alpha(.3)
+histogram(arr_nll_vstm_ibs_3(1,:),'edgecolor','none');
+alpha(.3)arr_nll_vstm_ibs_alloc3(1,3440)
 hold on
 histogram(arr_exact_vstm_ibs_3(1,:),'edgecolor','none');
 alpha(.3)
 hold on
-histogram(arr_nll_vstm_ibs_3(1,:),'edgecolor','none');
+histogram(arr_nll_vstm_ibs_alloc3(1,3440),'edgecolor','none');
 alpha(.3)
-legend('nll ibs alloc','nll ibs','nll exact')
+legend('nll ibs','nll exact','nll ibs alloc')
 title('vstm ibs vs. exact vs. alloc')
 
 %% samples used psycho

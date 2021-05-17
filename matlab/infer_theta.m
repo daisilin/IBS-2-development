@@ -150,7 +150,7 @@ if strcmp(submethod,'ibs') || strcmp(submethod,'ibs_alloc') ||strcmp(submethod,'
     output.funcalls = output.funcalls + Nopts*(mult_hiprec-1);
 end
 
-output_vec = [nLL_best,nLL_sd_best, output.samples_used,output.reps_used,output.funcalls,t_tot,bench_t,output.nll_mat];
+output_vec = [nLL_best,nLL_sd_best, output.samples_used,output.reps_used,output.funcalls,t_tot,bench_t];
 p_vec = p_vec;
 Nreps = Nreps;
 %x_best = theta_inf;
