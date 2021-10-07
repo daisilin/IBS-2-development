@@ -11,8 +11,8 @@
 
 PROJECT_FOLDER="IBS-2-development"
 
-#model=psycho
-model=vstm
+model=psycho
+#model=vstm
 #model=fourinarow
 
 proc_id=${SLURM_ARRAY_TASK_ID}
@@ -23,7 +23,7 @@ proc_id=${SLURM_ARRAY_TASK_ID}
 #$method = "$var1${SPACE}$var2"
 #method=ibs_5
 #Nsamples=10
-method=ibs_alloc_5
+method=ibs_dynamic_4
 #method=fixed
 #method=fixed 
 #method=fixedb
@@ -50,7 +50,7 @@ echo "addpath('$SCRATCH/${PROJECT_FOLDER}/matlab/'); recover_theta('${model}','$
 cat<<EOF | matlab -nodisplay
 %job_id = str2num(strjoin(regexp('$proc_id','\d','match'), ''))
 job_id = str2num('$proc_id')
-recover_theta('vstm','ibs_alloc_5', job_id)
+recover_theta('psycho','ibs_dynamic_4', job_id)
 
 EOF
 

@@ -1,4 +1,4 @@
-function [p_vec,tot_samples,nll_exact,theta_inf,output_vec]=infer_theta(model,method,stim,resp,settings)
+function [p_vec,Nreps,nll_exact,theta_inf,output_vec]=infer_theta(model,method,stim,resp,settings)
 %INFER_THETA Optimization run for a single problem set.
 % persistent x_00;
 % if isempty(x_00)
@@ -66,14 +66,15 @@ end
 % fprintf('x0',x0)
 % x_00 = x0;
 % method = {'ibs_alloc', 10};
-if size(method_split,1) ==1
-    submethod = method_split{1}        
-elseif isempty(str2num(method_split{2})) %if it's ibs_alloc or dynamic method, this condition should be true (empty)
+if size(method_split1)
+    isempty(str2num(method_split{2})) %if it's ibs_alloc or dynamic method, this condition should be true (empty)
     submethod = [method_split{1},'_', method_split{2}]
     Nsamples = str2num(method_split{3});
-else 
-    submethod = method_split{1} %else, submethod = 'ibs'
+elseif isempty(str2num(method_split{2})) == false
+    submethod = method_split{1}; %else, submethod = 'ibs'
     Nsamples = str2num(method_split{2});
+else
+    submethod = method_split
 end 
 %method_split = strsplit(method);
 %if length(method_split) > 1
@@ -175,17 +176,15 @@ if strcmp(submethod,'ibs') || strcmp(submethod,'ibs_alloc') || strcmp(submethod,
 end
 
 output_vec = [nLL_best,nLL_sd_best, output.samples_used,output.reps_used,output.funcalls,t_tot,bench_t];
-tot_samples = output.samples_used;
 if strcmp(submethod,'ibs_dynamic') 
     p_vec = output.p_current 
-elseif strcmp(submethod,'ibs_alloc') 
+end 
+if strcmp(submethod,'ibs_alloc') 
     p_vec = p_vec;
-else
-    p_vec = 0;
 end 
 %Nreps = Nreps;
 %x_best = theta_inf;
-[nll_exact,~,~]=estimate_nll_exact(model,stim,resp,theta_inf,1)
+[nll_exact,nll_sd_exact,~]=estimate_nll_exact(model,stim,resp,theta_inf,10)
 %nll_exact = nll_exact;
 %nll_diff = nll_exact - output_vec(1);
 %K_tot = output.K_tot;

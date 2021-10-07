@@ -37,7 +37,7 @@ for iSample = 1:Neff
     m = m + all(resp==resp_real,2); % m + a vector oflogical where hits = 1;m counts the number of hits for each trial
 end
 
-% Estimate p with one pseudo-count correction, a vector
+% Estimate p with one pseudo-count correction, a vector, probability of hit
 p = (m+1)/(Neff+2); % add prior: assume one hit and one miss have been seen; denomenator changed from +1 to +2
 
 nll = -sum(log(p));

@@ -39,7 +39,7 @@ nll_exact_filename = ['nll_exact_' model '_' method '_' num2str(proc_id) '.txt']
 %pvec_filename = ['p_vec_' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
 %Nreps_filename = ['Nreps' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
 pvec_filename = ['p_vec_' model '_' method '_' num2str(proc_id) '.txt'];
-Nreps_filename = ['Nreps' model '_' method '_' num2str(proc_id) '.txt'];
+tot_samples_filename = ['tot_samples' model '_' method '_' num2str(proc_id) '.txt'];
 %nll_diff_filename = ['nll_diff' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
 
 %save('/scratch/xl1005/IBS-2-development/results/theta_filename.txt','theta_filename')
@@ -49,7 +49,7 @@ Nreps_filename = ['Nreps' model '_' method '_' num2str(proc_id) '.txt'];
 %save('/scratch/xl1005/IBS-2-development/results/Nreps_filename.txt','Nreps_filename')
 
 % If output file already exist, continue from previous run
-theta_inf = []; output_vec = [];nll_exact = []; p_vec=[];Nresp =[];
+theta_inf = []; output_vec = [];nll_exact = []; p_vec=[];tot_samples =[];
 if exist(theta_filename,'file') && exist(output_filename,'file')
     try
         theta_inf = dlmread(theta_filename);
@@ -57,7 +57,7 @@ if exist(theta_filename,'file') && exist(output_filename,'file')
         nll_exact = dlmread(nll_exact_filename);
         %nll_diff = dlmread(nll_diff_filename);
         p_vec = dlmread(pvec_filename);
-        Nreps = dlmread(Nreps_filename);
+        tot_samples = dlmread(tot_samples_filename);
     catch
         % File(s) corrupted, need to restart from scratch
     end
@@ -75,7 +75,7 @@ for i=iStart:Ndatasets
     rng(i);
     stim=data.stim_all{i};
     resp=data.resp_all{i};
-    [p_vec(i,:),Nreps(i,:),nll_exact(i,:),theta_inf(i,:),output_vec(i,:)] = ...
+    [p_vec(i,:),tot_samples(i,:),nll_exact(i,:),theta_inf(i,:),output_vec(i,:)] = ...
         infer_theta(model,method,stim,resp,settings);
     dlmwrite(theta_filename,theta_inf,'Delimiter','\t')
     dlmwrite(output_filename,output_vec,'Delimiter','\t')
@@ -83,7 +83,7 @@ for i=iStart:Ndatasets
    % dlmwrite(nll_diff_filename,nll_diff,'Delimiter','\t')
 
     dlmwrite(pvec_filename,p_vec,'Delimiter','\t')
-    dlmwrite(Nreps_filename,Nreps,'Delimiter','\t')
+    dlmwrite(tot_samples_filename,tot_samples,'Delimiter','\t')
 end
   
 end
