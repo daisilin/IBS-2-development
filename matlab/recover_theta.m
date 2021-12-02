@@ -39,7 +39,7 @@ nll_exact_filename = ['nll_exact_' model '_' method '_' num2str(proc_id) '.txt']
 %pvec_filename = ['p_vec_' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
 %Nreps_filename = ['Nreps' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
 pvec_filename = ['p_vec_' model '_' method '_' num2str(proc_id) '.txt'];
-tot_samples_filename = ['tot_samples' model '_' method '_' num2str(proc_id) '.txt'];
+tot_samples_filename = ['tot_samples_' model '_' method '_' num2str(proc_id) '.txt'];
 %nll_diff_filename = ['nll_diff' model '_' cell2mat(method_split) '_' num2str(proc_id) '.txt'];
 
 %save('/scratch/xl1005/IBS-2-development/results/theta_filename.txt','theta_filename')
