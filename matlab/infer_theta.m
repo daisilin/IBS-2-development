@@ -68,7 +68,7 @@ end
 % method = {'ibs_alloc', 10};
 if size(method_split,1) ==1
     submethod = method_split{1}        
-elseif isempty(str2num(method_split{2})) %if it's ibs_alloc or dynamic method, this condition should be true (empty)
+elseif isempty(str2num(method_split{2})) %if it's ibs_static or dynamic method, this condition should be true (empty)
     submethod = [method_split{1},'_', method_split{2}]
     Nsamples = str2num(method_split{3});
 else 
@@ -109,18 +109,16 @@ switch submethod
         Ntrials = size(stim,1);
         thresh = settings.thresh*Ntrials;
         [~,~,output_fix] = estimate_nll_fixed1(model,stim,resp,x0,Nreps_fixed); % use x0 to get vector p by calling fixed sampling
-        %global p_initial 
-        %[~,~,output_ibs] = estimate_nll_ibs(model,stim,resp,x0,Nreps_ibs,thresh); 
+        %build loopup table for dilog calculation
+        lookup_logp = linspace(log(1e-6), log(1), 1e4); %sampled p points
+        dilog_p = dilog(exp(lookup_logp)); %value of dilog output
+        
         p_initial = output_fix.p_vec;
         S_budget = round(sum(1./p_initial * Nsamples));%estimate the total number of sample (budget)
         Nreps = round(S_budget * (1./sum(sqrt(dilog(p_initial)./p_initial)))*sqrt(p_initial.*dilog(p_initial))); %dilog(x) = Li_2(1-x);define nreps for each trial for ibs
 
-   %     [nll,nll_sd,output] = estimate_nll_ibs(model,stim,resp,x0,initial_reps,thresh); % use x0 to get vector p by calling fixed sampling
-   %     p_vec = output.p_current;
-    %    S_budget = round(round(sum(1./p_vec * Nsamples)));
-    %    Nreps = round(S_budget * (1./sum(sqrt(dilog(p_vec)./p_vec)))*sqrt(p_vec.*dilog(p_vec))); %dilog(x) = Li_2(1-x);define nreps for each trial for ibs
-        fun=@(x) estimate_nll_ibs_dynamic(model,stim,resp,x,Nreps,thresh,p_initial,Nsamples);
-        fun_hiprec=@(x) estimate_nll_ibs_dynamic(model,stim,resp,x,Nreps*mult_hiprec,thresh,p_initial,Nsamples);
+        fun=@(x) estimate_nll_ibs_dynamic(model,stim,resp,x,Nreps,thresh,p_initial,Nsamples,lookup_logp,dilog_p);
+        fun_hiprec=@(x) estimate_nll_ibs_dynamic(model,stim,resp,x,Nreps*mult_hiprec,thresh,p_initial,Nsamples,lookup_logp,dilog_p);
     case 'fixed'
         fun = @(x) estimate_nll_fixed1(model,stim,resp,x,Nsamples);
         fun_hiprec = @(x) estimate_nll_fixed1(model,stim,resp,x,Nsamples,mult_hiprec);
