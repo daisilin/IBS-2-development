@@ -1,4 +1,4 @@
-function recover_theta(model,method,proc_id,Nsamples,Ndatasets)
+function recover_theta(model,method,alpha,proc_id,Nsamples,Ndatasets)
 %RECOVER_THETA Run batch parameter recovery for given set parameters.
 
 if nargin < 4; Nsamples = []; end
@@ -6,16 +6,19 @@ if nargin < 5; Ndatasets = []; end
 
 method_split = split(method,"_");
 settings = get_model_settings(model);
-if isempty(str2num(method_split{2})) 
+if method_split == "exact"
+    Nsamples = 1; 
+elseif isempty(str2num(method_split{2})) 
     %submethod = [method_split{1},'_', method_split{2}]
     Nsamples = str2num(method_split{3});
-else 
+else  
     %submethod = method_split{1};
     Nsamples = str2num(method_split{2});
 end 
 settings.Nsamples = Nsamples;
 
 % Add required folders
+
 mypath = fileparts(mfilename('fullpath'));
 addpath([mypath filesep 'bads']);
 addpath([mypath filesep 'datasets']);
@@ -76,7 +79,7 @@ for i=iStart:Ndatasets
     stim=data.stim_all{i};
     resp=data.resp_all{i};
     [p_vec(i,:),tot_samples(i,:),nll_exact(i,:),theta_inf(i,:),output_vec(i,:)] = ...
-        infer_theta(model,method,stim,resp,settings);
+        infer_theta(model,method,stim,resp,settings,alpha);
     dlmwrite(theta_filename,theta_inf,'Delimiter','\t')
     dlmwrite(output_filename,output_vec,'Delimiter','\t')
     dlmwrite(nll_exact_filename,nll_exact,'Delimiter','\t')

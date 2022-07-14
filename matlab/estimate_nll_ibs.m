@@ -4,6 +4,7 @@ function [nll,nll_sd,output]=estimate_nll_ibs(model,stim,resp_real,theta,Nreps,t
 persistent samples_used;
 persistent reps_used;
 persistent funcalls;
+persistent p_vec;
 %persistent K_tot; % trials x funcalls; nll for each trial, with all repeats averaged for each trial; each column is a different x (param setting)depending on bads
 %persistent allocate_reps; % num of reps that should be allocated for this x
 
@@ -11,6 +12,7 @@ if isempty(samples_used)
     samples_used = 0;
     reps_used = 0;
     funcalls = 0;
+    p_vec = 0;
     %K_tot = [];
     %allocate_reps = 0;
 end
@@ -19,17 +21,21 @@ if nargin < 4 || isempty(theta)
     output.samples_used = samples_used;     
     output.reps_used = reps_used;
     output.funcalls = funcalls;
+    output.p_vec = p_vec;
+
     %output.K_tot = K_tot;
     %output.allocate_reps = allocate_reps; 
     samples_used = 0;
     reps_used = 0;
     funcalls = 0;
+    p_vec = 0;
     return;
 end
 
 Ntrials = size(resp_real,1);
 nll_trials = zeros(Ntrials,1);
 K_tol = zeros(Ntrials,1);
+total_samples = 0;
 
 if nargin < 6 || isempty(thresh); thresh = Inf; end
 if isscalar(Nreps); Nreps = Nreps*ones(Ntrials,1); end
@@ -69,20 +75,24 @@ for iRep = 1:Nreps_max %loop over repeats
     K_active(K_active==0) = [];
     %Compute estimate of the variance if requested
     if nargout >= 1
-        Ktab = -(psi(1,1:max(K_active(:)))' - psi(1,1));
-        nll_var_vec(iRep) = nansum(Ktab(K_active)./Nreps(ind_active).^2);
+         %Ktab = -(psi(1,1:max(K_active(:)))' - psi(1,1));
+         %nll_var_vec(iRep) = nansum(Ktab(K_active)./Nreps(ind_active).^2);
+         nll_var_vec_i = compute_variance(K_active,ind_active,Nreps);
+         nll_var_vec(iRep) = nll_var_vec_i;
     end      
     samples_used = samples_used + (sum(tries)+n_active)/Ntrials;
     %nll_mat = cat(2,nll_mat,sum(nll_trials./K));
 end
-    p_vec = (Nreps-0.5)./K_tol; % num hit (1) / num total tries(samples), assuming 0.5 hit 0.5 miss observed, a weaker prior
-
+%     p_vec = (Nreps-0.5)./K_tol; % num hit (1) / num total tries(samples), assuming 0.5 hit 0.5 miss observed, a weaker prior
+    p_vec = (Nreps)./K_tol;
 funcalls = funcalls + 1;
 reps_used = reps_used + mean(Nreps);
 nll_mat = nll_trials./Nreps;% average nll over repeats
 nll = sum(nll_mat); 
 if nargout >= 1
-    nll_sd = sqrt(nansum(nll_var_vec));
+%     nll_sd = nanmean(sqrt(nll_var_vec));
+    nll_sd = sqrt(nanmean(nll_var_vec));
+
 end
 
 if nargout > 2

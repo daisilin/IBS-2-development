@@ -1,19 +1,18 @@
 #!/bin/bash
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=2
-#SBATCH --array=1-80
-#SBATCH --cpus-per-task=2
+#SBATCH --array=1-120
+#SBATCH --cpus-per-task=1
 #SBATCH --time=48:00:00
 #SBATCH --mem=10GB
-#SBATCH --job-name=ibs_alloc
+#SBATCH --job-name=ibs_dynamic
 #SBATCH --mail-type=END
 #SBATCH --mail-user=xl1005@nyu.edu
-#SBATCH --output=ibs2_a_%j.out
+#SBATCH --output=ibs2_d20_p_%j.out
 
 PROJECT_FOLDER="IBS-2-development"
 
-#model=psycho
-model=vstm
+model=psycho
+#model=vstm
 #model=fourinarow
 
 proc_id=${SLURM_ARRAY_TASK_ID}
@@ -24,7 +23,8 @@ proc_id=${SLURM_ARRAY_TASK_ID}
 #$method = "$var1${SPACE}$var2"
 #method=ibs_3
 #Nsamples=10
-method=ibs_alloc_3
+alpha=0.7
+method=ibs_dynamic_20
 #method=fixed
 #method=fixed 
 #method=fixedb
@@ -32,9 +32,9 @@ method=ibs_alloc_3
 
 
 if [ $method = "exact" ]; then
-    workdir=$SCRATCH/${PROJECT_FOLDER}/results/${model}/${method}
+    workdir=$SCRATCH/${PROJECT_FOLDER}/results/${model}/${method}/
 else
-    workdir=$SCRATCH/${PROJECT_FOLDER}/results/${model}/${method}${Nsamples}
+    workdir=$SCRATCH/${PROJECT_FOLDER}/results/${model}/${method}${Nsamples}/${alpha}
 fi
 
 module purge. 
@@ -47,11 +47,12 @@ cd $workdir
 
 echo $model $method $Nsamples $proc_id
 
-echo "addpath('$SCRATCH/${PROJECT_FOLDER}/matlab/'); recover_theta('${model}','${method}',${proc_id},${Nsamples}); exit;" 
+echo "addpath('$SCRATCH/${PROJECT_FOLDER}/matlab/'); recover_theta('${model}','${method}','${alpha}',${proc_id},${Nsamples}); exit;" 
 cat<<EOF | matlab -nodisplay
 %job_id = str2num(strjoin(regexp('$proc_id','\d','match'), ''))
 job_id = str2num('$proc_id')
-recover_theta('vstm','ibs_alloc_3', job_id)
+alpha = str2num('$alpha')
+recover_theta('psycho','ibs_dynamic_20', alpha,job_id)
 
 EOF
 

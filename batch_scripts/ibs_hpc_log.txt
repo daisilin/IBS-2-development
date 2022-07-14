@@ -1,0 +1,20 @@
+
+Job 16345387 (vstm exact, batch_ibs2_exact.sh )
+Rep3: 
+job 16315298 (ibs_dynamic_3, vstm, alpha=0.9,batch_ibs_v_dynamic_0.9.sh)
+Job 16315673 (ibs_dynamic_3, vstm, alpha=0.5,batch_ibs_v_dynamic3_0.5.sh)
+Job 16315996 (ibs_dynamic_3, vstm, alpha=0.3,batch_ibs_v_dynamic3_0.3.sh)
+Job 16316142 (ibs_dynamic_3, vstm, alpha=0.99,batch_ibs_v_dynamic3_0.99.sh)
+Job 16316329 (ibs_dynamic_3, vstm, alpha=0.7,batch_ibs_v_dynamic3_0.7.sh)
+Job 16345062 (ibs_dynamic_3, vstm, alpha=0.1,batch_ibs_v_dynamic3_0.1.sh)
+
+Rep10:
+Job 16345153 (ibs_10,batch_ibs_v_10.sh )
+Job 16345234 (ibs_static_10,batch_ibs_v_static10.sh)
+
+Job 16345471 (ibs_dynamic_10, vstm, alpha=0.1,batch_ibs_v_dynamic10_0.1.sh)
+Job 16345551 (ibs_dynamic_10, vstm, alpha=0.3,batch_ibs_v_dynamic10_0.3.sh)
+Job 16345631 (ibs_dynamic_10, vstm, alpha=0.5,batch_ibs_v_dynamic10_0.5.sh)
+Job 16345712 (ibs_dynamic_10, vstm, alpha=0.7,batch_ibs_v_dynamic10_0.7.sh)
+Job 16345855 (ibs_dynamic_10, vstm, alpha=0.9,batch_ibs_v_dynamic10_0.9.sh)
+Job 16345856 (ibs_dynamic_10, vstm, alpha=0.99,batch_ibs_v_dynamic10_0.99.sh)

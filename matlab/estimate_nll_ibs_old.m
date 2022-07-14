@@ -57,7 +57,7 @@ reps_used = reps_used + Nreps;
 
 nll = mean(nll_vec);
 if nargout > 1
-    nll_sd = sqrt(mean(nll_var_vec)/Nreps);
+    nll_sd = sqrt(mean(nll_var_vec)/Nreps^2);
 end
 
 if nargout > 2
