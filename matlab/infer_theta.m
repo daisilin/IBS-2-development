@@ -1,4 +1,4 @@
-function [p_vec,tot_samples,nll_exact,theta_inf,output_vec]=infer_theta(model,method,stim,resp,settings,alpha)
+function [p_vec,p0,tot_samples,nll_exact,theta_inf,output_vec]=infer_theta(model,method,stim,resp,settings,alpha)
 %INFER_THETA Optimization run for a single problem set.
 % persistent x_00;
 % if isempty(x_00)
@@ -87,10 +87,16 @@ switch submethod
         Nreps = Nsamples;
         Ntrials = size(stim,1);
         p_vec = ones(Ntrials,1);
-
+        p_initial =1;
+        lookup_logp = 1;
+        dilog_p = 1;
         thresh = settings.thresh*Ntrials;
-        fun=@(x) estimate_nll_ibs(model,stim,resp,x,Nreps,thresh);
-        fun_hiprec=@(x) estimate_nll_ibs(model,stim,resp,x,Nreps*mult_hiprec,thresh);
+%         fun=@(x) estimate_nll_ibs(model,stim,resp,x,Nreps,thresh);
+        fun=@(x) estimate_nll_ibs2(model,stim,resp,x,Nreps,thresh,p_initial,Nsamples,lookup_logp,dilog_p,one_rep,alpha);
+
+%         fun_hiprec=@(x) estimate_nll_ibs(model,stim,resp,x,Nreps*mult_hiprec,thresh);
+        fun_hiprec=@(x) estimate_nll_ibs2(model,stim,resp,x,Nreps*mult_hiprec,thresh,p_initial,Nsamples,lookup_logp,dilog_p,one_rep,alpha);
+
     case 'ibs_static'
 %       Nreps = Nsamples;
         Nreps_fixed = 100;
@@ -101,8 +107,14 @@ switch submethod
         S_budget = round(sum(1./p_vec * Nsamples));%estimate the total number of sample (budget)
         Nreps = round(S_budget * (1./sum(sqrt(dilog(p_vec)./p_vec)))*sqrt(p_vec.*dilog(p_vec))); %dilog(x) = Li_2(1-x);define nreps for each trial for ibs
         Nreps(Nreps==0) = 1;
-        fun=@(x) estimate_nll_ibs(model,stim,resp,x,Nreps,thresh);
-        fun_hiprec=@(x) estimate_nll_ibs(model,stim,resp,x,Nreps*mult_hiprec,thresh);
+        p_initial =1;
+        lookup_logp = 1;
+        dilog_p = 1;
+%         fun=@(x) estimate_nll_ibs(model,stim,resp,x,Nreps,thresh);
+%         fun_hiprec=@(x) estimate_nll_ibs(model,stim,resp,x,Nreps*mult_hiprec,thresh);
+        fun=@(x) estimate_nll_ibs2(model,stim,resp,x,Nreps,thresh,p_initial,Nsamples,lookup_logp,dilog_p,one_rep,alpha);
+        fun_hiprec=@(x) estimate_nll_ibs2(model,stim,resp,x,Nreps*mult_hiprec,thresh,p_initial,Nsamples,lookup_logp,dilog_p,one_rep,alpha);
+
     case 'ibs_dynamic'
         Nreps_fixed = 100;
         Ntrials = size(stim,1);
@@ -175,8 +187,11 @@ output_vec = [nLL_best,nLL_sd_best, output.samples_used,output.reps_used,output.
 tot_samples = output.samples_used;
 if strcmp(submethod,'ibs_dynamic') 
     p_vec = output.p_current 
+    p0=p_initial;
+
 elseif strcmp(submethod,'ibs_static') 
-    p_vec = p_vec;
+%     p_vec = p_vec;
+    p0=p_initial;
 % elseif strcmp(submethod,'ibs') 
 %     p_vec = output.p_vec;
 elseif strcmp(submethod,'exact') 

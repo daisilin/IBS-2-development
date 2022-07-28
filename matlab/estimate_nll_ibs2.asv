@@ -51,12 +51,11 @@ elseif samples_used ~= 0
     Nreps = round(S_budget * (1./sum(sqrt(dilog_lookup./p_current)))*sqrt(p_current.* dilog_lookup ));
      %Nreps = round(S_budget * (1./sum(sqrt(dilog(p_current)./p_current)))*sqrt(p_current.*dilog(p_current))); %dilog(x) = Li_2(1-x);define nreps for each trial for ibs
     Nreps(Nreps==0) = 1;
+    Nreps = Nreps*highrep;
 else
     p_current = p_initial;
     Nreps=reps;
 end
-Nreps = Nreps*highrep;
-
 if model == "bernoulli"; theta = p_initial;end
 % p_current = p_initial;
 % Nreps = reps;

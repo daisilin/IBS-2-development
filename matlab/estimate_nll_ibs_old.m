@@ -1,4 +1,4 @@
-function [nll,nll_sd,output]=estimate_nll_ibs_old(model,stim,resp_real,theta,Nreps,thresh)
+function [nll,nll_sd,output]=estimate_nll_ibs(model,stim,resp_real,theta,Nreps,thresh)
 %ESTIMATE_NLL_IBS Negative log likelihood estimation via inverse binomial sampling.
 
 persistent samples_used;
@@ -57,7 +57,7 @@ reps_used = reps_used + Nreps;
 
 nll = mean(nll_vec);
 if nargout > 1
-    nll_sd = sqrt(mean(nll_var_vec)/Nreps^2);
+    nll_sd = sqrt(mean(nll_var_vec)/Nreps);
 end
 
 if nargout > 2

@@ -1,33 +1,10 @@
-function [nll,nll_sd,output]=estimate_nll_ibs2(model,stim,resp_real,theta,reps,thresh,p_initial, Nsamples,lookup_logp,dilog_p,highrep,alpha)
+function [nll,nll_sd,output]=estimate_nll_general(model,stim,resp_real,theta,reps,thresh,p_initial, Nsamples,lookup_logp,dilog_p,highrep,alpha)
 %ESTIMATE_NLL_IBS Negative log likelihood estimation via inverse binomial sampling.
 % %thresh is for early stopping, if nll of data for each ibs run/repeat is smaller than a number; 
-persistent samples_used;
-persistent reps_used;
-persistent funcalls;
-persistent p_current;
 
-%persistent K_tot; % trials x funcalls; nll for each trial, with all repeats averaged for each trial; each column is a different x (param setting)depending on bads
-%persistent allocate_reps; % num of reps that should be allocated for this x
-
-if isempty(samples_used)
-    samples_used = 0;
-    reps_used = 0;
-    funcalls = 0;
-    %K_tot = [];
-    %allocate_reps = 0;
-end
  
 if nargin < 4 || isempty(theta)
     nll = []; nll_sd = []; 
-    output.samples_used = samples_used;     
-    output.reps_used = reps_used;
-    output.funcalls = funcalls;
-    output.p_current = p_current;
-    %output.K_tot = K_tot;
-    %output.allocate_reps = allocate_reps; 
-    samples_used = 0;
-    reps_used = 0;
-    funcalls = 0;
     return;
 end
 
@@ -35,26 +12,26 @@ Ntrials = size(resp_real,1);
 nll_trials = zeros(Ntrials,1);
 K_tol = zeros(Ntrials,1);
 total_samples = 0;
-% 
+% for ibs classic emthod, no allocation (no p vec needed)
 if ~exist('p_initial','var') || isempty(p_initial)
-    p_initial = ones(Ntrials,1);
-    
+    p_initial = ones(Ntrials,1);   
+    Nreps = Nsamples*ones(Ntrials,1);
 end
 
-if p_initial == 1
-    Nreps = reps;
-    alpha = 1;
-    p_current = 1;
-elseif samples_used ~= 0
-    S_budget = round(sum(1./p_current * Nsamples));%estimate the total number of sample (budget)
-    dilog_lookup = interp1(lookup_logp,dilog_p,log(p_current));
-    Nreps = round(S_budget * (1./sum(sqrt(dilog_lookup./p_current)))*sqrt(p_current.* dilog_lookup ));
-     %Nreps = round(S_budget * (1./sum(sqrt(dilog(p_current)./p_current)))*sqrt(p_current.*dilog(p_current))); %dilog(x) = Li_2(1-x);define nreps for each trial for ibs
-    Nreps(Nreps==0) = 1;
-else
-    p_current = p_initial;
-    Nreps=reps;
-end
+% if p_initial == 1
+%     Nreps = reps;
+%     alpha = 1;
+%     p_current = 1;
+% if samples_used ~= 0
+%     S_budget = round(sum(1./p_current * Nsamples));%estimate the total number of sample (budget)
+%     dilog_lookup = interp1(lookup_logp,dilog_p,log(p_current));
+%     Nreps = round(S_budget * (1./sum(sqrt(dilog_lookup./p_current)))*sqrt(p_current.* dilog_lookup ));
+%      %Nreps = round(S_budget * (1./sum(sqrt(dilog(p_current)./p_current)))*sqrt(p_current.*dilog(p_current))); %dilog(x) = Li_2(1-x);define nreps for each trial for ibs
+%     Nreps(Nreps==0) = 1;
+% else
+%     p_current = p_initial;
+%     Nreps=reps;
+% end
 Nreps = Nreps*highrep;
 
 if model == "bernoulli"; theta = p_initial;end
