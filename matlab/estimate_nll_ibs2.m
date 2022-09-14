@@ -1,4 +1,4 @@
-function [nll,nll_sd,output]=estimate_nll_ibs2(model,stim,resp_real,theta,reps,thresh,p_initial, Nsamples,lookup_logp,dilog_p,highrep,alpha)
+function [nll,nll_var,output]=estimate_nll_ibs2(model,stim,resp_real,theta,reps,thresh,p_initial, Nsamples,lookup_logp,dilog_p,highrep,alpha)
 %ESTIMATE_NLL_IBS Negative log likelihood estimation via inverse binomial sampling.
 % %thresh is for early stopping, if nll of data for each ibs run/repeat is smaller than a number; 
 persistent samples_used;
@@ -13,12 +13,11 @@ if isempty(samples_used)
     samples_used = 0;
     reps_used = 0;
     funcalls = 0;
-    %K_tot = [];
-    %allocate_reps = 0;
+
 end
  
 if nargin < 4 || isempty(theta)
-    nll = []; nll_sd = []; 
+    nll = []; nll_var = []; 
     output.samples_used = samples_used;     
     output.reps_used = reps_used;
     output.funcalls = funcalls;
@@ -41,6 +40,7 @@ if ~exist('p_initial','var') || isempty(p_initial)
     
 end
 
+
 if p_initial == 1
     Nreps = reps;
     alpha = 1;
@@ -53,25 +53,25 @@ elseif samples_used ~= 0
     Nreps(Nreps==0) = 1;
 else
     p_current = p_initial;
-    Nreps=reps;
+    S_budget = round(sum(1./p_current * Nsamples));%estimate the total number of sample (budget)
+    dilog_lookup = interp1(lookup_logp,dilog_p,log(p_current));
+    Nreps = round(S_budget * (1./sum(sqrt(dilog_lookup./p_current)))*sqrt(p_current.* dilog_lookup ));
+    Nreps(Nreps==0) = 1;
+%     Nreps=reps;
 end
 Nreps = Nreps*highrep;
 
 if model == "bernoulli"; theta = p_initial;end
-% p_current = p_initial;
-% Nreps = reps;
-% S_budget = round(sum(1./p_current * Nsamples));%estimate the total number of sample (budget)
-% Nreps = round(S_budget * (1./sum(sqrt(dilog(p_current)./p_current)))*sqrt(p_current.*dilog(p_current)));
-% S_budget = round(sum(1./p_current * Nsamples));
-% dilog_lookup = interp1(lookup_logp,dilog_p,log(p_current));
-% Nreps = round(S_budget * (1./sum(sqrt(dilog_lookup./p_current)))*sqrt(p_current.* dilog_lookup ));
 
 if nargin < 6 || isempty(thresh); thresh = Inf; end
-if isscalar(Nreps); Nreps = Nreps*ones(Ntrials,1); end
+% if isscalar(reps); Nreps = reps*ones(Ntrials,1); end % NEED TO FIX, PASS
+% EVERYTHING AS VECTOR, NO SCALAR INTO THE FUNCTION
+
 Nreps_max = max(Nreps);
-nll_var_vec = zeros(1,Nreps_max); 
-%nll_vec = zeros(1,Nreps_max); %use the largest repeat num; Nreps is a vector of length = N repeats,
-if nargout > 1; nll_var_vec = zeros(1,Nreps_max); end
+% nll_var_vec = zeros(1,Nreps_max); 
+K_mtx = ones(Ntrials,Nreps_max);
+
+% if nargout > 1; nll_var_vec = zeros(1,Nreps_max); end
 
 
 for iRep = 1:Nreps_max %loop over repeats
@@ -101,20 +101,25 @@ for iRep = 1:Nreps_max %loop over repeats
 
     end
     K = tries+ind_active;
+    K_nan = K;
+    K_nan(K_nan==0)=1;
+    K_mtx(:,iRep) = K_nan; 
     K_tol = K_tol+K;
     K_active = K;
     K_active(K_active==0) = [];
-    %Compute estimate of the variance if requested
-    if nargout >= 1
-         %Ktab = -(psi(1,1:max(K_active(:)))' - psi(1,1));
-         %nll_var_vec(iRep) = nansum(Ktab(K_active)./Nreps(ind_active).^2);
-         nll_var_vec_i = compute_variance(K_active,ind_active,Nreps);
-         nll_var_vec(iRep) = nll_var_vec_i;
-    end  
+
     total_samples = total_samples + (sum(tries)+n_active)/Ntrials;
     samples_used = samples_used + (sum(tries)+n_active)/Ntrials;
     %nll_mat = cat(2,nll_mat,sum(nll_trials./K));
 end
+    %Compute estimate of the variance if requested
+    if nargout >= 1
+         Ktab = -(psi(1,1:max(K_mtx(:)))' - psi(1,1));
+         LLvar = Ktab(K_mtx);   
+         nlogLvar = sum(LLvar,2)./Nreps.^2; %var per trial,summed over repeats
+%          nll_var_vec_i = compute_variance(K_active,ind_active,Nreps);
+%          nll_var_vec(iRep) = nll_var_vec_i;
+    end  
 %     alpha = 0.5;
 %     p_vec = (Nreps-0.5)./K_tol;% num hit (1) / num total tries(samples), assuming 0.5 hit 0.5 miss observed, a weaker prior
     p_vec = Nreps./K_tol;
@@ -127,7 +132,9 @@ nll_mat = nll_trials./Nreps;% average nll over repeats
 nll = sum(nll_mat); 
 if nargout >= 1
     %nll_sd = nanmean(sqrt(nll_var_vec));
-    nll_sd = sqrt(nanmean(nll_var_vec));
+%     nll_sd = sqrt(nanmean(nll_var_vec));
+      nll_var = sum(nlogLvar);
+%     nll_sd = sqrt(nanmean(nll_var_vec)/mean(Nreps));
 
 end
 
@@ -136,6 +143,7 @@ if nargout > 2
     output.reps_used = reps_used;    
     output.funcalls = funcalls;
     output.p_current = p_current;
+    output.nlogLvar_trials = nlogLvar;
 end
 
 end

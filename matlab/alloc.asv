@@ -1,6 +1,0 @@
-function r= alloc(p,N)
-    r_n = np.sqrt(dilog(p) * p);
-    r_d = np.sqrt(dilog(p) / p);
-    S = round(sum(1./p * N));
-    r = S * r_n / np.sum(r_d);
-end 

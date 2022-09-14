@@ -1,10 +1,9 @@
-function [nll,nll_sd,output]=estimate_nll_ibs(model,stim,resp_real,theta,Nreps,thresh)
+function [nll,nll_sd,output]=estimate_nll_ibs_old(model,stim,resp_real,theta,Nreps,thresh)
 %ESTIMATE_NLL_IBS Negative log likelihood estimation via inverse binomial sampling.
 
 persistent samples_used;
 persistent reps_used;
 persistent funcalls;
-
 if isempty(samples_used)
     samples_used = 0;
     reps_used = 0;
@@ -45,7 +44,7 @@ for iRep=1:Nreps
     % Compute estimate of the variance if requested
     if nargout > 1
         K = tries+1;
-        Ktab = -(psi(1,1:max(K(:)))' - psi(1,1));
+        Ktab = -(psi(1,1:max(K(:)))' - psi(1,1));%equation 16 in paper
         nll_var_vec(iRep) = sum(Ktab(K));
     end
     
@@ -57,6 +56,7 @@ reps_used = reps_used + Nreps;
 
 nll = mean(nll_vec);
 if nargout > 1
+    nll_var = mean(nll_var_vec)/Nreps;
     nll_sd = sqrt(mean(nll_var_vec)/Nreps);
 end
 
