@@ -7,13 +7,11 @@ persistent funcalls;
 persistent p_current;
 
 %persistent K_tot; % trials x funcalls; nll for each trial, with all repeats averaged for each trial; each column is a different x (param setting)depending on bads
-%persistent allocate_reps; % num of reps that should be allocated for this x
 
 if isempty(samples_used)
     samples_used = 0;
     reps_used = 0;
     funcalls = 0;
-
 end
  
 if nargin < 4 || isempty(theta)

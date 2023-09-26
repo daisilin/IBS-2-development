@@ -1,4 +1,4 @@
-function L=compute_nll_vstm(stim,resp,theta,Nx,testflag)
+function [L,L_trials]=compute_nll_vstm(stim,resp,theta,Nx,testflag)
 %COMPUTE_NLL_VSTM Average negative log likelihood of VSTM data.
 
 % Grid size for numerical integration
@@ -63,7 +63,7 @@ log_pr2p = log(x2gtx3);
 L = zeros(size(resp));
 L(resp == 1) = log((1-lambda).*exp(log_pr1(resp==1)) + lambda/6);
 L(resp ~= 1) = log((1-lambda).*exp(log_pr2p(resp~=1)) + lambda/6);
-
+L_trials = L;
 L = -sum(L);
 
 end

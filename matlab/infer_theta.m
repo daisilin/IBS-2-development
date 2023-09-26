@@ -1,4 +1,4 @@
-function [p_vec,p0,tot_samples,nll_exact,theta_inf,output_vec]=infer_theta(model,method,stim,resp,settings,alpha)
+function [p_vec,p0,x0,tot_samples,nll_exact,theta_inf,output_vec]=infer_theta(model,method,stim,resp,settings,alpha)
 %INFER_THETA Optimization run for a single problem set.
 % persistent x_00;
 % if isempty(x_00)
@@ -180,6 +180,7 @@ nLL_sd_best = nLL_sd(idx_best);
 % Correct number of effective function calls to account for high prec
 if strcmp(submethod,'ibs') || strcmp(submethod,'ibs_static') || strcmp(submethod,'ibs_dynamic') || strcmp(submethod,'fixed') || strcmp(submethod,'fixedb')
     output.funcalls = output.funcalls + Nopts*(mult_hiprec-1);
+    output.x0 = x0;
 end
 output_vec = [nLL_best,nLL_sd_best, output.samples_used,output.reps_used,output.funcalls];
 
@@ -188,18 +189,24 @@ tot_samples = output.samples_used;
 if strcmp(submethod,'ibs_dynamic') 
     p_vec = output.p_current 
     p0=p_initial;
-
+    x0=x0;
 elseif strcmp(submethod,'ibs_static') 
 %     p_vec = p_vec;
     p0=p_initial;
+    x0=x0;
 % elseif strcmp(submethod,'ibs') 
 %     p_vec = output.p_vec;
 elseif strcmp(submethod,'exact') 
 %     [nll,nll_sd,output]=estimate_nll_ibs(model,stim,resp,theta_inf,10);
     [~,~,output] = estimate_nll_fixed1(model,stim,resp,theta_inf,200); % use x0 to get vector p by calling fixed sampling
-    p_vec = output.p_vec;
-else
     p_vec = 0;
+    p0=0;
+    x0=0;
+else
+    p_vec = output.p_current;
+%     p_vec = 0;
+    p0=0;
+    x0=x0;
 end 
 
 [nll_exact,~,~]=estimate_nll_exact(model,stim,resp,theta_inf,1)
